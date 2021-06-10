@@ -18,9 +18,6 @@ EXPIRE_HOURS = os.getenv("EXPIRE_HOURS")
 EXPIRE_SECS = os.getenv("EXPIRE_SECS")
 EXPIRE_USERS = os.getenv("EXPIRE_USERS")
 
-#Enter the limit for valid number of users per invite link
-EXPIRE_USERS = 1
-
 updater = Updater(token=BOT_TOKEN, use_context=True)
 dispatcher = updater.dispatcher
 
