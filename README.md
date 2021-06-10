@@ -1,6 +1,4 @@
-# securejoinbot
-
-* Secure Generation of Invite links for Private Telegram groups *
+# Secure Generation of Invite links for Private Telegram groups
 
 **How to create your own bot using this repository:**
 
