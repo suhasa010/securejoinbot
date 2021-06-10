@@ -1,8 +1,8 @@
 # securejoinbot
 
-* Secure Generation of Invite links for Private Telegram groups
+* Secure Generation of Invite links for Private Telegram groups *
 
-**How to create your own bot using this repository:
+**How to create your own bot using this repository:**
 
 1. Clone or Fork this repository.
 2. Create a heroku app and connect to your forked repository.
