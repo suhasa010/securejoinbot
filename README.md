@@ -12,7 +12,7 @@
 
 **Features:**
 
-1. Admins can generate inline links using "@ \<yourbotname\> link"
+1. Admins can generate inline links using "@\<yourbotname\> link"
 2. Users can generate links that expire in specified number of days/hours/seconds and is only valid for them (customizable to allow more users per link, check sample.env).
 3. Admins can view the logs in their log channels (NOTIF_CHANNEL_ID needs to be specified in .env) where the bot should added as an admin.
 4. Admins can reset the limit to generate more invite links in the bot PM using /resetlimit command.
