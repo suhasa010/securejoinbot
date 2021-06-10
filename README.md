@@ -3,7 +3,7 @@
 **How to create your own bot using this repository:**
 
 1. Clone or Fork this repository.
-2. Create a heroku app and connect to your forked repository.
+2. Create a heroku app and connect to your forked repository. (Alternatively you can also host it on your VPS or Raspberry Pi)
 3. Create a redis database in redislabs.com or use Redis addon on heroku.
 4. Rename the sample.env file to .env and fill in all the required details.
 5. Create a bot in @Botfather and get the BOT_TOKEN and paste it in .env
