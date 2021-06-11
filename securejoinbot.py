@@ -33,7 +33,8 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, Bot, Cha
 def inline_generate(update, context):
     query = update.inline_query.query
     results = list()
-    if(str(update.inline_query.from_user.id) in ADMIN_IDS):
+    user = context.bot.get_chat_member(GROUP_ID, update.inline_query.from_user.id)
+    if (user.status == "administrator" or user.status == "creator"):
         if query.lower().strip() == 'link':
             timestamp = datetime.datetime.utcnow()
             add_seconds = datetime.timedelta(days=int(EXPIRE_DAYS), hours=int(EXPIRE_HOURS), seconds=int(EXPIRE_SECS))
@@ -85,7 +86,8 @@ start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
 def resetlimit(update, context):
-    if(str(update.effective_chat.id) in ADMIN_IDS):
+    user = context.bot.get_chat_member(GROUP_ID, update.effective_chat.id)
+    if (user.status == "administrator" or user.status == "creator"):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Limit reset.")
         r.mset({f"{update.effective_chat.id}_inv": "1"})
 
@@ -94,7 +96,8 @@ resetlimit_handler = CommandHandler('resetlimit', resetlimit)
 dispatcher.add_handler(resetlimit_handler)
 
 def revoke(update, context):
-    if(str(update.effective_chat.id) in ADMIN_IDS):
+    user = context.bot.get_chat_member(GROUP_ID, update.effective_chat.id)
+    if (user.status == "administrator" or user.status == "creator"):
         print(update.message.reply_to_message.text)
         context.bot.revoke_chat_invite_link(chat_id = GROUP_ID, invite_link = update.message.reply_to_message.text)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Revoked the invite link.")
@@ -106,7 +109,8 @@ revoke_handler = CommandHandler('revoke', revoke)
 dispatcher.add_handler(revoke_handler)
 
 def stats(update, context):
-    if(str(update.effective_chat.id) in ADMIN_IDS):
+    user = context.bot.get_chat_member(GROUP_ID, update.effective_chat.id)
+    if (user.status == "administrator" or user.status == "creator"):
         total_started = int(r.get("total_started"))
         total_inv = int(r.get("total_inv"))
         context.bot.send_message(chat_id=update.effective_chat.id, text=f"Total Users: {total_started}\nTotal Invites Generated: {total_inv}")

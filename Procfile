@@ -1,1 +1,1 @@
-worker: python securejoinbot.py
+worker: python3 securejoinbot.py
