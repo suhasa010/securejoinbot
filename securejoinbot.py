@@ -16,6 +16,7 @@ REDIS_DB_NUMBER = os.getenv("REDIS_DB_NUMBER")
 
 EXPIRE_DAYS = os.getenv("EXPIRE_DAYS")
 EXPIRE_HOURS = os.getenv("EXPIRE_HOURS")
+EXPIRE_MINS = os.getenv("EXPIRE_MINS")
 EXPIRE_SECS = os.getenv("EXPIRE_SECS")
 EXPIRE_USERS = os.getenv("EXPIRE_USERS")
 
@@ -40,7 +41,7 @@ def inline_generate(update, context):
     if (user.status == "administrator" or user.status == "creator"):
         if query.lower().strip() == 'link':
             timestamp = datetime.datetime.utcnow()
-            add_seconds = datetime.timedelta(days=int(EXPIRE_DAYS), hours=int(EXPIRE_HOURS), seconds=int(EXPIRE_SECS))
+            add_seconds = datetime.timedelta(days=int(EXPIRE_DAYS), hours=int(EXPIRE_HOURS), minutes=int(EXPIRE_MINS), seconds=int(EXPIRE_SECS))
             time_in_future = timestamp + add_seconds
             invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, member_limit=EXPIRE_USERS, timeout=None)
             markup = InlineKeyboardMarkup([[
@@ -52,12 +53,12 @@ def inline_generate(update, context):
                         id=uuid4(),
                         title= Strings.INLINE_GENERATE_INVITE_LINK,
                         input_message_content=InputTextMessageContent(f"""{invitelink.invite_link}\n""", parse_mode='HTML', disable_web_page_preview=True),
-                        description=f"Valid for {EXPIRE_USERS} user(s)\nExpires in {EXPIRE_DAYS} days, {EXPIRE_HOURS} hours, {EXPIRE_SECS} seconds",
+                        description=f"Valid for {EXPIRE_USERS} user(s)\nExpires in {EXPIRE_DAYS} days, {EXPIRE_HOURS} hours, {EXPIRE_MINS} mins, {EXPIRE_SECS} seconds",
                         reply_markup = markup
                     )
             )
             r.incrby("total_inv", amount = 1)
-            context.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"Admin {update.inline_query.from_user.first_name} has generated an expiring link - {invitelink.invite_link}", reply_markup = markup, disable_web_page_preview=True)
+            context.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"#GENERATE\nAdmin {update.inline_query.from_user.first_name} generated an expiring link - {invitelink.invite_link}", reply_markup = markup, disable_web_page_preview=True)
         context.bot.answer_inline_query(update.inline_query.id, results, cache_time = 1)
     else:
         results = list()
@@ -108,7 +109,7 @@ def revoke(update, context):
         print(update.message.reply_to_message.text)
         context.bot.revoke_chat_invite_link(chat_id = GROUP_ID, invite_link = update.message.reply_to_message.text)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Revoked the invite link.")
-        context.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"Admin {update.effective_chat.first_name} has revoked {update.message.reply_to_message.text}.", disable_web_page_preview=True)
+        context.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"#REVOKE\nAdmin {update.effective_chat.first_name} revoked {update.message.reply_to_message.text}", disable_web_page_preview=True)
         
         
 from telegram.ext import CommandHandler
@@ -132,17 +133,20 @@ def direct_generate(update, context):
     #     context.bot.send_message(chat_id=update.effective_chat.id, text="send some text, you fool!") 
     if(r.get(f"{update.effective_chat.id}_inv") == b"1"):
         timestamp = datetime.datetime.utcnow()
-        add_seconds = datetime.timedelta(days=int(EXPIRE_DAYS), hours=int(EXPIRE_HOURS), seconds=int(EXPIRE_SECS))
+        add_seconds = datetime.timedelta(days=int(EXPIRE_DAYS), hours=int(EXPIRE_HOURS), minutes=int(EXPIRE_MINS), seconds=int(EXPIRE_SECS))
         time_in_future = timestamp + add_seconds
         invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, member_limit=EXPIRE_USERS, timeout=None)
         context.bot.send_message(chat_id=update.effective_chat.id, text=invitelink.invite_link)
         markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton("Revoke", callback_data=f"{invitelink.invite_link}"),
                     ]])
-        context.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"""{update.effective_chat.first_name} has generated an expiring link.
-        
-<b>Profile:</b> <a href="tg://user?id={update.effective_chat.id}">{update.effective_chat.first_name}</a>\n
-<b>Invite Link:</b> {invitelink.invite_link}""", parse_mode = 'HTML', disable_web_page_preview=True, reply_markup = markup)
+        chat = context.bot.get_chat(GROUP_ID, update.message.from_user.id)
+        context.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"""#GENERATE
+<b>User:</b> <a href="tg://user?id={update.effective_chat.id}">{update.effective_chat.first_name}</a> 
+<b>ID:</b> <code>{update.effective_chat.id}</code>
+<b>Generated:</b> <a href="{invitelink.invite_link}">Invite Link</a>
+<b>Chat:</b> {chat.title}        
+""", parse_mode = 'HTML', disable_web_page_preview=True, reply_markup = markup)
         r.mset({f"{update.effective_chat.id}_inv": "0"})
         r.incrby("total_inv", amount = 1)
     else:
@@ -157,7 +161,7 @@ def revoke_inline(update: Update, _: CallbackContext):
     if (user.status == "administrator" or user.status == "creator"):
         query.bot.revoke_chat_invite_link(chat_id = GROUP_ID, invite_link = query.data)
         query.answer(text="Revoked the invite link.", show_alert = True)
-        query.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"Admin {query.from_user.first_name} has revoked {query.data}.", disable_web_page_preview=True)
+        query.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"#REVOKE\nAdmin {query.from_user.first_name} revoked {query.data}", disable_web_page_preview=True)
     else:
         query.answer(Strings.INLINE_UNAUTHORIZED, show_alert = True)
     

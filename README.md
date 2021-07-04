@@ -17,4 +17,4 @@
 3. Admins can view the logs in their log channels (NOTIF_CHANNEL_ID needs to be specified in .env) where the bot should added as an admin.
 4. Admins can reset the limit to generate more invite links in the bot PM using /resetlimit command.
 5. Admins can revoke any link by just sending the invite link to be revoked in the bot PM and using /revoke command as a reply to the invite link.
-6. Admins can view stats related to how many users have started the bot and generated invite links.
+6. Admins can view stats related to how many users have started the bot and generated invite links using /stats command.
