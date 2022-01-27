@@ -1,4 +1,4 @@
-# Secure Generation of Invite links for Private Telegram groups [![Stars]](https://ghbtns.com/github-btn.html?user=twbs&repo=bootstrap&type=star&count=true&size=large)
+# Secure Generation of Invite links for Private Telegram groups [![Stars](https://ghbtns.com/github-btn.html?user=twbs&repo=bootstrap&type=star&count=true&size=large)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/suhasa010/securejoinbot)
 
