@@ -1,0 +1,88 @@
+{
+    "name": "Secure Join Bot",
+    "description": "Secure Generation of Invite links for Private Telegram groups",
+    "keywords": [
+        "telegram",
+        "bot",
+        "invite link",
+        "generate",
+        "secure",
+        "private groups"
+    ],
+    "repository": "https://github.com/suhasa010/securejoinbot",
+    "website": "https://t.me/suhasa010",
+    "success_url": "https://t.me/ssjprojects/61",
+    "env": {
+        "BOT_TOKEN": {
+            "description": "Get this value from @BotFather > New Bot > API Token",
+            "required": "true"
+        },
+        "GROUP_ID": {
+            "description": "Enter the ID of the private group for which you want to generate invite links here",
+            "required": "true"
+        },
+        "NOTIF_CHANNEL_ID": {
+            "description": "Enter the channel ID where the logs about invite link generations should be posted",
+            "required": "true"
+        },
+        "REDIS_DB_HOST": {
+            "description": "Enter your redis hostname here. for eg., redis-18809.c124.ax-south-1-1.ec2.cloud.redislabs.com",
+            "value": "localhost",
+            "required": "true"
+        },
+        "REDIS_DB_PASSWORD": {
+            "description": "Enter your redis password, if any.",
+            "required": "false"
+        },
+        "REDIS_DB_PORT": {
+            "description": "Enter your redis port number here. for eg., 18809",
+            "required": "true",
+            "value": "18809"
+        },
+        "REDIS_DB_NUMBER": {
+            "description": "Enter your redis database number here. for eg., 3",
+            "required": "true",
+            "value": "3"
+        },
+        "EXPIRE_DAYS": {
+            "description": "Enter in how many days an invite link should expire (optional, by default it expires in a day)",
+            "required": "false",
+            "value": "1"
+        },
+        "EXPIRE_HOURS": {
+            "description": "Enter in how many hours an invite link should expire (optional, by default 0)",
+            "required": "false",
+            "value": "0"
+        },
+        "EXPIRE_MINUTES": {
+            "description": "Enter in how many minutes an invite link should expire (optional, by default 0)",
+            "required": "false",
+            "value": "0"
+        },
+        "EXPIRE_SECONDS": {
+            "description": "Enter in how many seconds an invite link should expire (optional, by default 0)",
+            "required": "false",
+            "value": "0"
+        },
+        "EXPIRE_USERS": {
+            "description": "Enter the limit for valid number of users per invite link (optional, by default the link is valid for one user)",
+            "required": "false",
+            "value": "1"
+        },
+        "ADMIN_APPROVAL": {
+            "description": "Require Admin Approval? (optional) (True/False)",
+            "required": "false",
+            "value": "False"
+        }
+    },
+    "buildpacks": [{
+        "url": "heroku/python"
+    }],
+    "formation": {
+        "worker": {
+            "quantity": 1,
+            "size": "free"
+        }
+    },
+    "stack": "heroku-20"
+}

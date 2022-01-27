@@ -1,5 +1,5 @@
-from telegram.ext import Updater, CallbackContext
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import Updater, CallbackContext, Filters
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ForceReply
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -9,6 +9,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 GROUP_ID = os.getenv("GROUP_ID")
 NOTIF_CHANNEL_ID = os.getenv("NOTIF_CHANNEL_ID")
 ADMIN_IDS = os.getenv("ADMIN_IDS")
+SUPPORT_GROUP_ID = os.getenv("SUPPORT_GROUP_ID")
 REDIS_DB_HOST = os.getenv("REDIS_DB_HOST")
 REDIS_DB_PASSWORD = os.getenv("REDIS_DB_PASSWORD")
 REDIS_DB_PORT = os.getenv("REDIS_DB_PORT")
@@ -19,6 +20,7 @@ EXPIRE_HOURS = os.getenv("EXPIRE_HOURS")
 EXPIRE_MINS = os.getenv("EXPIRE_MINS")
 EXPIRE_SECS = os.getenv("EXPIRE_SECS")
 EXPIRE_USERS = os.getenv("EXPIRE_USERS")
+ADMIN_APPROVAL = os.getenv("ADMIN_APPROVAL")
 
 updater = Updater(token=BOT_TOKEN, use_context=True)
 dispatcher = updater.dispatcher
@@ -29,11 +31,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 import redis
 r = redis.Redis(host=REDIS_DB_HOST, port=REDIS_DB_PORT, db=REDIS_DB_NUMBER, password = REDIS_DB_PASSWORD if (REDIS_DB_PASSWORD) else None)
 
-
-
 import datetime, string
 from uuid import uuid4
 from telegram import InlineQueryResultArticle, InputTextMessageContent, Bot, ChatInviteLink
+
 def inline_generate(update, context):
     query = update.inline_query.query
     results = list()
@@ -43,7 +44,10 @@ def inline_generate(update, context):
             timestamp = datetime.datetime.utcnow()
             add_seconds = datetime.timedelta(days=int(EXPIRE_DAYS), hours=int(EXPIRE_HOURS), minutes=int(EXPIRE_MINS), seconds=int(EXPIRE_SECS))
             time_in_future = timestamp + add_seconds
-            invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, member_limit=EXPIRE_USERS, timeout=None)
+            if(ADMIN_APPROVAL == True):
+                invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, timeout=None, creates_join_request=True)
+            else:
+                invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, member_limit=EXPIRE_USERS, timeout=None)
             markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton("Revoke", callback_data=f"{invitelink.invite_link}"),
                     ]])
@@ -76,10 +80,12 @@ from telegram.ext import InlineQueryHandler
 inline_generate_handler = InlineQueryHandler(inline_generate)
 dispatcher.add_handler(inline_generate_handler)
 
-
-
 def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text=Strings.GROUP_START_MESSAGE)
+    try:
+        deeplinks(update, context)
+    except IndexError as e:
+        pass
+        context.bot.send_message(chat_id=update.effective_chat.id, text=Strings.GROUP_START_MESSAGE)
     if(not r.exists(f"{update.effective_chat.id}_inv")):
         r.mset({f"{update.effective_chat.id}_inv": "1"})
     if(not r.exists(f"total_started")):
@@ -127,7 +133,11 @@ from telegram.ext import CommandHandler
 stats_handler = CommandHandler('stats', stats)
 dispatcher.add_handler(stats_handler)
 
-
+def deeplinks(update, context):
+    if(context.args[0] == "link"):
+        update.message.text = "/link"
+        direct_generate(update, context)
+        
 def direct_generate(update, context):
     # if context.args == null:
     #     context.bot.send_message(chat_id=update.effective_chat.id, text="send some text, you fool!") 
@@ -135,11 +145,16 @@ def direct_generate(update, context):
         timestamp = datetime.datetime.utcnow()
         add_seconds = datetime.timedelta(days=int(EXPIRE_DAYS), hours=int(EXPIRE_HOURS), minutes=int(EXPIRE_MINS), seconds=int(EXPIRE_SECS))
         time_in_future = timestamp + add_seconds
-        invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, member_limit=EXPIRE_USERS, timeout=None)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=invitelink.invite_link)
+        if(ADMIN_APPROVAL == True):
+            invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, timeout=None, creates_join_request=True)
+        else:
+            invitelink = context.bot.create_chat_invite_link(chat_id = GROUP_ID, expire_date=time_in_future, member_limit=EXPIRE_USERS, timeout=None)
+        markup = ForceReply(selective=False)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=invitelink.invite_link, reply_markup=markup)
         markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton("Revoke", callback_data=f"{invitelink.invite_link}"),
                     ]])
+        
         chat = context.bot.get_chat(GROUP_ID, update.message.from_user.id)
         context.bot.send_message(chat_id = NOTIF_CHANNEL_ID, text = f"""#GENERATE
 <b>User:</b> <a href="tg://user?id={update.effective_chat.id}">{update.effective_chat.first_name}</a> 
@@ -151,7 +166,8 @@ def direct_generate(update, context):
         r.incrby("total_inv", amount = 1)
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text=Strings.LIMIT_REACHED)
-
+        
+from telegram.ext import CommandHandler
 direct_generate_handler = CommandHandler('link', direct_generate)
 dispatcher.add_handler(direct_generate_handler)
 

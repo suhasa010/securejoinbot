@@ -1,3 +1,6 @@
 .env
 nohup.out
 __pycache__
+.gitignore
+securejoinbot/*
+securejoinbot_dev.py
