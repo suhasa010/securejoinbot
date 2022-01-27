@@ -1,5 +1,7 @@
 # Secure Generation of Invite links for Private Telegram groups
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 You own a private group but don't want to have a single public link which can be easily propogated and be misused?
 Here's your solution. Using this bot you can generate limited user, limited time links for users to join your private group while maintaining security.
 
